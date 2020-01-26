@@ -1,4 +1,4 @@
-package kz.oku.kerek.okukerek.service;
+package kz.oku.kerek.service;
 
 import org.springframework.stereotype.Service;
 

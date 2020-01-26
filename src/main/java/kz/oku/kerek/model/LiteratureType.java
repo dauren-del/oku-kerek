@@ -1,4 +1,4 @@
-package kz.oku.kerek.okukerek.model;
+package kz.oku.kerek.model;
 
 /**
  *

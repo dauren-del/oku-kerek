@@ -1,54 +1,37 @@
-package kz.oku.kerek.okukerek.entity;
+package kz.oku.kerek.model;
 
-import kz.oku.kerek.okukerek.model.LiteratureType;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
 import java.util.Set;
 
 /**
- * This class represents literature mapping into database table
  *
  * @author Dauren Delmukhambetov
  * @since 0.1.0
  */
-@Entity
-public class LiteratureEntity {
+public abstract class Literature {
 
-    @Id
-    @Column
     protected Long id;
 
-    @Column
-    @Enumerated(value = EnumType.STRING)
     protected LiteratureType type;
 
-    @Column
     protected String name;
 
-    @Column
     protected Set<String> authors;
 
-    @Column
     protected String provider;
 
-    @Column
     protected String description;
 
-    @Column
     protected Set<String> topics;
 
-    @Column
     protected String annotation;
 
-    @Column
     protected Set<String> keywords;
 
-    @Column
     protected String isbn;
+
+    public Literature(LiteratureType type) {
+        this.type = type;
+    }
 
     public Long getId() {
         return id;
@@ -60,10 +43,6 @@ public class LiteratureEntity {
 
     public LiteratureType getType() {
         return type;
-    }
-
-    public void setType(LiteratureType type) {
-        this.type = type;
     }
 
     public String getName() {

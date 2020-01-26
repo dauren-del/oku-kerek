@@ -1,4 +1,4 @@
-package kz.oku.kerek.okukerek;
+package kz.oku.kerek;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
