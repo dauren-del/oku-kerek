@@ -1,6 +1,9 @@
 package kz.oku.kerek.service;
 
-import org.springframework.stereotype.Service;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
 
 /**
  * This service provides methods to manipulate books
@@ -8,6 +11,10 @@ import org.springframework.stereotype.Service;
  * @author Dauren Delmukhambetov
  * @since 0.1.0
  */
-@Service
 public interface BookService {
+
+    void downloadPages(Long bookId) throws IOException;
+
+    void generatePdf(Long bookId, Path pdfPath) throws FileNotFoundException;
+
 }
