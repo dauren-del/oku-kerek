@@ -5,12 +5,8 @@ import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.element.Image;
-import kz.oku.kerek.model.Book;
 import kz.oku.kerek.util.HtmlParseUtils;
 import lombok.RequiredArgsConstructor;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -25,37 +21,34 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static java.lang.String.*;
 
 @Service
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
 
     private final FileStorageService fileStorageService;
-
-    public Book loadInfo(String url) throws IOException {
-        Document bookPage = Jsoup.parse(new URL(url), 5000);
-        Elements scriptElements = bookPage.getElementsByTag("script");
-        return new Book();
-    }
+    private final ConcurrentHashMap<Long, String> bookStatuses = new ConcurrentHashMap<>();
 
     public void downloadPages(Long bookId) throws IOException {
         String baseUrl = "http://kazneb.kz";
-        String url = String.format("http://kazneb.kz/bookView/view/?brId=%d&simple=true&lang=kk", bookId);
+        String url = format("http://kazneb.kz/bookView/view/?brId=%d&simple=true&lang=kk", bookId);
+
+        setStatus(bookId, "Requesting information from kazneb.kz");
         List<String> pagesPath = HtmlParseUtils.parseBookPagesPath(url);
 
         if (CollectionUtils.isEmpty(pagesPath)) {
+            setStatus(bookId, "No pages found for this book");
             return;
         }
 
-        //todo temporary limitation to meet AWS Free Tier requirements
-        if (pagesPath.size() > 50) {
-            pagesPath = pagesPath.subList(0, 10);
-        }
-
+        setStatus(bookId, "Starting download book pages");
         for (String pagePath : pagesPath) {
 
             String pageName = HtmlParseUtils.parsePageImageName(pagePath);
-            String filename = String.format("%d/%s", bookId, pageName);
+            String filename = format("%d/%s", bookId, pageName);
 
             if (fileStorageService.exists(filename)) {
                 continue;
@@ -69,10 +62,12 @@ public class BookServiceImpl implements BookService {
             fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
             fileStorageService.putFile(tempFile, filename);
+            setStatus(bookId, format("Downloading book pages (%d/%d)", pagesPath.indexOf(pagePath), pagesPath.size()));
         }
     }
 
     public void generatePdf(Long bookId, Path pdfPath) throws FileNotFoundException {
+        setStatus(bookId, "Starting generate PDF document");
 
         List<String> files = fileStorageService.list(bookId.toString());
         byte[] cover = fileStorageService.getFile(files.get(0));
@@ -89,8 +84,19 @@ public class BookServiceImpl implements BookService {
             pdfDocument.addNewPage(new PageSize(image.getImageWidth(), image.getImageHeight()));
             image.setFixedPosition(i+1, 0,0 );
             document.add(image);
+            setStatus(bookId, format("Generating PDF document (%d/%d)", i+1, files.size()));
         }
         document.close();
+    }
+
+    @Override
+    public String getStatus(Long bookId) {
+        return this.bookStatuses.getOrDefault(bookId, format("There is no status for book with ID %d", bookId));
+    }
+
+    @Override
+    public synchronized void setStatus(Long bookId, String status) {
+        this.bookStatuses.put(bookId, status);
     }
 
 }

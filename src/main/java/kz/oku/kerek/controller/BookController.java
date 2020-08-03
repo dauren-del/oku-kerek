@@ -1,9 +1,10 @@
 package kz.oku.kerek.controller;
 
+import kz.oku.kerek.event.BookDownloadEvent;
 import kz.oku.kerek.model.Book;
 import kz.oku.kerek.service.BookService;
-import kz.oku.kerek.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,16 +14,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Controller
 @RequiredArgsConstructor
 public class BookController {
 
     private final BookService bookService;
-    private final FileStorageService fileStorageService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @GetMapping("/greeting")
     public String greeting(@RequestParam(name = "name", required = false, defaultValue = "World") String name, Model model) {
@@ -42,18 +40,20 @@ public class BookController {
 
     @GetMapping("/book/download")
     public RedirectView downloadBook(@RequestParam("bookId") Long bookId) throws IOException {
+        this.applicationEventPublisher.publishEvent(new BookDownloadEvent(this, bookId));
+        return new RedirectView(String.format("/book/%d/status", bookId));
+    }
 
-        Path tempFile = Files.createTempFile("book-", ".pdf");
-        String filename = String.format("%d/%d.pdf", bookId, bookId);
+    @GetMapping("/book/{bookId}/status")
+    public String status(@PathVariable("bookId") Long bookId, Model model) {
+        String status = bookService.getStatus(bookId);
 
-        bookService.downloadPages(bookId);
-        if (!fileStorageService.exists(filename)) {
-            bookService.generatePdf(bookId, tempFile);
-            fileStorageService.putFile(tempFile, filename);
+        if (status.startsWith("http")) {
+            return "redirect:" + status;
         }
-        URL accessLink = fileStorageService.generateAccessUrl(filename);
 
-        return new RedirectView(accessLink.toString());
+        model.addAttribute("status", status);
+        return "status";
     }
 
 }

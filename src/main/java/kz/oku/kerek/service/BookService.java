@@ -17,4 +17,8 @@ public interface BookService {
 
     void generatePdf(Long bookId, Path pdfPath) throws FileNotFoundException;
 
+    String getStatus(Long bookId);
+
+    void setStatus(Long bookId, String status);
+
 }
