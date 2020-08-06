@@ -1,10 +1,12 @@
-package kz.oku.kerek.service;
+package kz.oku.kerek.service.impl;
 
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.element.Image;
+import kz.oku.kerek.service.BookService;
+import kz.oku.kerek.service.FileStorageService;
 import kz.oku.kerek.util.HtmlParseUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 
 @Service
 @RequiredArgsConstructor

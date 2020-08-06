@@ -35,6 +35,7 @@ public class BookDownloadEventListener {
         }
         URL accessLink = fileStorageService.generateAccessUrl(filename);
         bookService.setStatus(bookId, accessLink.toString());
+        fileStorageService.deleteByExtensions(bookId.toString(), "png");
     }
 
 }

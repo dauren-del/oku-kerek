@@ -1,21 +1,23 @@
-package kz.oku.kerek.service;
+package kz.oku.kerek.service.impl;
 
-import lombok.Builder;
+import kz.oku.kerek.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -31,7 +33,7 @@ public class AmazonS3StorageService implements FileStorageService {
     private String bucketName = "kazneb";
 
     @Override
-    public void putFile(Path filePath, String fileName) throws IOException {
+    public void putFile(Path filePath, String fileName) {
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -95,6 +97,22 @@ public class AmazonS3StorageService implements FileStorageService {
 
         ListObjectsResponse response = amazonS3Client.listObjects(listObjectsRequest);
         return !CollectionUtils.isEmpty(response.contents());
+    }
+
+    @Override
+    public void deleteByExtensions(String directory, String extension) {
+        List<String> objects = list(directory);
+        List<ObjectIdentifier> toDelete = objects.stream()
+                .filter(key -> key.endsWith("." + extension))
+                .map(key -> ObjectIdentifier.builder().key(key).build())
+                .collect(Collectors.toList());
+
+        DeleteObjectsRequest deleteObjectsRequest = DeleteObjectsRequest.builder()
+                .bucket(bucketName)
+                .delete(Delete.builder().objects(toDelete).build())
+                .build();
+
+        amazonS3Client.deleteObjects(deleteObjectsRequest);
     }
 
 }

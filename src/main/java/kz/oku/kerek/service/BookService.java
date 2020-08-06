@@ -2,7 +2,6 @@ package kz.oku.kerek.service;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Path;
 
 /**

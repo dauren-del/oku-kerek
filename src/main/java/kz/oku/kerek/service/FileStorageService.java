@@ -1,13 +1,14 @@
 package kz.oku.kerek.service;
 
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 
 public interface FileStorageService {
 
-    void putFile(Path filePath, String fileName) throws IOException;
+    void putFile(Path filePath, String fileName);
+
+    void deleteByExtensions(String directory, String extention);
 
     byte[] getFile(String key);
 
