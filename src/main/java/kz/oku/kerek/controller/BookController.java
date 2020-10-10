@@ -39,7 +39,7 @@ public class BookController {
     }
 
     @GetMapping("/book/download")
-    public RedirectView downloadBook(@RequestParam("bookId") Long bookId) throws IOException {
+    public RedirectView downloadBook(@RequestParam("bookId") Long bookId) {
         this.applicationEventPublisher.publishEvent(new BookDownloadEvent(this, bookId));
         return new RedirectView(String.format("/book/%d/status", bookId));
     }

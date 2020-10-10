@@ -37,5 +37,4 @@ public class BookDownloadEventListener {
         bookService.setStatus(bookId, accessLink.toString());
         fileStorageService.deleteByExtensions(bookId.toString(), "png");
     }
-
 }

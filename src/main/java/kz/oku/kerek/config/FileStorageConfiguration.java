@@ -21,6 +21,9 @@ public class FileStorageConfiguration {
     @Value("#{environment.AWS_SECRET_KEY}")
     private String awsSecretKey;
 
+    @Value("${aws.s3.presigner.endpoint}")
+    private String endpoint;
+
     @Bean
     public S3Client amazonS3Client() {
         return S3Client.builder()
@@ -33,7 +36,7 @@ public class FileStorageConfiguration {
         return S3Presigner.builder()
                 .region(Region.US_EAST_1)
                 .credentialsProvider(awsCredentialsProvider)
-                .endpointOverride(URI.create("https://s3.amazonaws.com"))
+                .endpointOverride(URI.create(endpoint))
                 .build();
     }
 
